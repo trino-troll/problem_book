@@ -1,0 +1,46 @@
+version: '3.5'
+services:
+  web-server:
+    image: tascker:v01
+    build:
+      context: .
+      dockerfile: 'dockerfile'
+    container_name: tasker
+    tty: true
+    environment:
+      APP_PORT: '5000'
+      MYSQL_HOST_BOOK: 'app-db'
+      MYSQL_USER_BOOK: 'troll'
+      MYSQL_PASS_BOOK: 'pass776'
+      MYSQL_DATABASE_BOOK: 'problem_book' 
+      SECRET_KEY: 'secret troll secret'
+    ports:
+      - '5000:5000'
+      - '443:443'
+    restart: unless-stopped
+    depends_on:
+      - app-db
+    networks:
+      - localnet
+
+  app-db:
+    image: mysql:latest
+    container_name: app-mysql
+    # command: --default-authentication-plugin=mysql_native_password
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: 'test'
+      MYSQL_USER: 'troll'
+      MYSQL_PASSWORD: 'pass776' 
+      MYSQL_DATABASE: 'problem_book'
+    volumes:
+      - /var/lib/mysql/problem_book/*:/var/lib/mysql
+      - ./init:/docker-entrypoint-initdb.d
+    command: --default-authentication-plugin=mysql_native_password && --character-set-server=utf8mb4 --collation-server=utf8mb4_general_ci
+    networks:
+      - localnet
+
+networks:
+  localnet: 
+    driver: bridge
+    name: localnet
